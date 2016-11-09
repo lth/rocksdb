@@ -122,6 +122,21 @@ PersistentCacheTierTest::PersistentCacheTierTest()
 #endif
 }
 
+#ifdef OS_LINUX
+// Block cache tests
+TEST_F(PersistentCacheTierTest, BlockCacheInsertWithFileCreateError) {
+  cache_ = NewBlockCache(Env::Default(), path_,
+                         /*size=*/std::numeric_limits<uint64_t>::max(),
+                         /*direct_writes=*/ false);
+  rocksdb::SyncPoint::GetInstance()->SetCallBack( 
+    "BlockCacheTier::NewCacheFile:DeleteDir", OnDeleteDir);
+
+  RunNegativeInsertTest(/*nthreads=*/ 1, /*max_keys*/ 10 * 1024 * kStressFactor);
+
+  rocksdb::SyncPoint::GetInstance()->ClearAllCallBacks();
+}
+#endif
+
 #ifdef TRAVIS
 // Travis is unable to handle the normal version of the tests running out of
 // fds, out of space and timeouts. This is an easier version of the test
@@ -175,21 +190,6 @@ TEST_F(PersistentCacheTierTest, BlockCacheInsert) {
     }
   }
 }
-
-#ifdef OS_LINUX
-// Block cache tests
-TEST_F(PersistentCacheTierTest, BlockCacheInsertWithFileCreateError) {
-  cache_ = NewBlockCache(Env::Default(), path_,
-                         /*size=*/std::numeric_limits<uint64_t>::max(),
-                         /*direct_writes=*/ false);
-  rocksdb::SyncPoint::GetInstance()->SetCallBack( 
-    "BlockCacheTier::NewCacheFile:DeleteDir", OnDeleteDir);
-
-  RunNegativeInsertTest(/*nthreads=*/ 1, /*max_keys*/ 10 * 1024 * kStressFactor);
-
-  rocksdb::SyncPoint::GetInstance()->ClearAllCallBacks();
-}
-#endif
 
 TEST_F(PersistentCacheTierTest, BlockCacheInsertWithEviction) {
   for (auto nthreads : {1, 5}) {
