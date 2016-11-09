@@ -123,34 +123,37 @@ Status BlockCacheTier::Close() {
   return Status::OK();
 }
 
-std::string BlockCacheTier::PrintStats() {
-  std::ostringstream os;
-  os << "persistentcache.blockcachetier.bytes_piplined: "
-     << stats_.bytes_pipelined_.ToString() << std::endl
-     << "persistentcache.blockcachetier.bytes_written: "
-     << stats_.bytes_written_.ToString() << std::endl
-     << "persistentcache.blockcachetier.bytes_read: "
-     << stats_.bytes_read_.ToString() << std::endl
-     << "persistentcache.blockcachetier.insert_dropped"
-     << stats_.insert_dropped_ << std::endl
-     << "persistentcache.blockcachetier.cache_hits: " << stats_.cache_hits_
-     << std::endl
-     << "persistentcache.blockcachetier.cache_misses: " << stats_.cache_misses_
-     << std::endl
-     << "persistentcache.blockcachetier.cache_errors: " << stats_.cache_errors_
-     << std::endl
-     << "persistentcache.blockcachetier.cache_hits_pct: "
-     << stats_.CacheHitPct() << std::endl
-     << "persistentcache.blockcachetier.cache_misses_pct: "
-     << stats_.CacheMissPct() << std::endl
-     << "persistentcache.blockcachetier.read_hit_latency: "
-     << stats_.read_hit_latency_.ToString() << std::endl
-     << "persistentcache.blockcachetier.read_miss_latency: "
-     << stats_.read_miss_latency_.ToString() << std::endl
-     << "persistenetcache.blockcachetier.write_latency: "
-     << stats_.write_latency_.ToString() << std::endl
-     << PersistentCacheTier::PrintStats();
-  return os.str();
+PersistentCache::StatsType BlockCacheTier::Stats() {
+  std::map<std::string, double> stats;
+  stats.insert({"persistentcache.blockcachetier.bytes_piplined",
+                stats_.bytes_pipelined_.Average()});
+  stats.insert({"persistentcache.blockcachetier.bytes_written",
+                 stats_.bytes_written_.Average()});
+  stats.insert({"persistentcache.blockcachetier.bytes_read",
+                stats_.bytes_read_.Average()});
+  stats.insert({"persistentcache.blockcachetier.insert_dropped",
+                stats_.insert_dropped_});
+  stats.insert({"persistentcache.blockcachetier.cache_hits",
+                stats_.cache_hits_});
+  stats.insert({"persistentcache.blockcachetier.cache_misses",
+                stats_.cache_misses_});
+  stats.insert({"persistentcache.blockcachetier.cache_errors",
+                stats_.cache_errors_});
+  stats.insert({"persistentcache.blockcachetier.cache_hits_pct",
+                stats_.CacheHitPct()});
+  stats.insert({"persistentcache.blockcachetier.cache_misses_pct",
+                stats_.CacheMissPct()});
+  stats.insert({"persistentcache.blockcachetier.read_hit_latency",
+                stats_.read_hit_latency_.Average()});
+  stats.insert({"persistentcache.blockcachetier.read_miss_latency",
+                stats_.read_miss_latency_.Average()});
+  stats.insert({"persistenetcache.blockcachetier.write_latency",
+                stats_.write_latency_.Average()});
+
+
+  auto out = PersistentCacheTier::Stats();
+  out.push_back(stats);
+  return out;
 }
 
 Status BlockCacheTier::Insert(const Slice& key, const char* data,
