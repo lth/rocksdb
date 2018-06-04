@@ -745,6 +745,8 @@ class DBImpl : public DB {
   friend class WriteCommittedTxn;
   friend class WritePreparedTxn;
   friend class WritePreparedTxnDB;
+  friend class WriteUnpreparedTxn;
+  friend class WriteUnpreparedTxnDB;
   friend class WriteBatchWithIndex;
 #ifndef ROCKSDB_LITE
   friend class ForwardIterator;

@@ -68,11 +68,16 @@ class WritePreparedTxn : public PessimisticTransaction {
   // WritePreparedTxnDB
   inline void SetId(uint64_t id) override { Transaction::SetId(id); }
 
+  Status PrepareInternal() override;
+
+  // Number of sub-batches in prepare
+  size_t prepare_batch_cnt_ = 0;
+
+  WritePreparedTxnDB* wpt_db_;
+
  private:
   friend class WritePreparedTransactionTest_BasicRecoveryTest_Test;
   friend class WritePreparedTxnDB;
-
-  Status PrepareInternal() override;
 
   Status CommitWithoutPrepareInternal() override;
 
@@ -97,10 +102,6 @@ class WritePreparedTxn : public PessimisticTransaction {
   // No copying allowed
   WritePreparedTxn(const WritePreparedTxn&);
   void operator=(const WritePreparedTxn&);
-
-  WritePreparedTxnDB* wpt_db_;
-  // Number of sub-batches in prepare
-  size_t prepare_batch_cnt_ = 0;
 };
 
 }  // namespace rocksdb
